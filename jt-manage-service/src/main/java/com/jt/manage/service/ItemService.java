@@ -57,9 +57,15 @@ public class ItemService extends BaseService<Item>{
 		return new EasyUIResult(pageInfo.getTotal(), pageInfo.getList());
 	}
 
-	public SysResult updateItem(Item item) {
+	public SysResult updateItem(Item item, String desc) {
 		item.setUpdated(new Date());
 		itemMapper.updateByPrimaryKeySelective(item);
+		
+		ItemDesc itemDesc = new ItemDesc();
+		itemDesc.setItemId(item.getId());
+		itemDesc.setUpdated(new Date());
+		itemDesc.setItemDesc(desc);
+		itemDescMapper.updateByPrimaryKeySelective(itemDesc);
 		return SysResult.ok();
 	}
 	
@@ -69,4 +75,11 @@ public class ItemService extends BaseService<Item>{
 		return SysResult.ok(itemDesc);
 	}
 	
+	//商品级联删除
+	public SysResult deleteItem(String[] ids){
+		//先删除字表信息，再删除主表信息
+		itemDescMapper.deleteByIDS(ids);
+		itemMapper.deleteByIDS(ids);
+		return SysResult.ok();
+	}
 }

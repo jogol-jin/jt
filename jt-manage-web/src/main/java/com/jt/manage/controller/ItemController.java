@@ -34,15 +34,15 @@ public class ItemController {
 	
 	@RequestMapping("update")
 	@ResponseBody
-	public SysResult updateItem(Item item){
-		return itemService.updateItem(item);
+	public SysResult updateItem(Item item, String desc){
+		return itemService.updateItem(item, desc);
 	}
 	//商品删除
 	@RequestMapping("/delete")
 	@ResponseBody
 	public SysResult deleteItem(@RequestParam(value="ids") String id){
 		String[] ids = id.split(",");
-		itemService.deleteByIds(ids);
+		itemService.deleteItem(ids);
 		return SysResult.ok();
 	}
 	

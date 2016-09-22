@@ -7,6 +7,7 @@ import javax.persistence.Table;
 
 @Table(name="tb_item")
 public class Item extends BasePojo{
+	///哈哈哈新添加的
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;

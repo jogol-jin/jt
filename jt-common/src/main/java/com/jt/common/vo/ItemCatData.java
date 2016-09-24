@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ItemCatData {
 	//序列化成json数据时为 u
+	//为什么要写单个字母，为了传输是数据减少，点滴优化
 	@JsonProperty("u")
 	private String url;
 	

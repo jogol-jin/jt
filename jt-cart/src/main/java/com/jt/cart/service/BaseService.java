@@ -1,11 +1,10 @@
-package com.jt.manage.service;
+package com.jt.cart.service;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.jt.common.service.RedisService;
-import com.jt.manage.mapper.base.mapper.SysMapper;
+import com.jt.cart.mapper.base.mapper.SysMapper;
 
 public abstract class BaseService<T> {
 

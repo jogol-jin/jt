@@ -1,13 +1,22 @@
 package com.jt.manage.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jt.common.service.RedisService;
 import com.jt.common.vo.ItemCatData;
 import com.jt.common.vo.ItemCatResult;
 import com.jt.manage.mapper.ItemCatMapper;
@@ -15,8 +24,13 @@ import com.jt.manage.pojo.ItemCat;
 
 @Service
 public class ItemCatService extends BaseService<ItemCat>{
+	//log4j
+	private static final Logger log = Logger.getLogger(ItemCatService.class);
 	@Autowired
 	private ItemCatMapper itemCatMapper;
+	@Autowired
+	private RedisService redisService;
+	private static  ObjectMapper MAPPER = new ObjectMapper();
 	
 	public List<ItemCat> queryAll(){
 		return itemCatMapper.select(null);
@@ -30,6 +44,19 @@ public class ItemCatService extends BaseService<ItemCat>{
 	public ItemCatResult getItemCatAll(){
 		//三级结构实现的不好,需要一个一个处理，当需求有变化时，需要重新修改代码
 		ItemCatResult result = new ItemCatResult();
+		
+		//从redis中读取数据
+		String key = "JT_ITEM_CAT";
+		String jsonData = redisService.get(key);
+		if(StringUtils.isNoneEmpty(jsonData)){
+			//缓存中有值
+			try {
+				return MAPPER.readValue(jsonData, ItemCatResult.class);
+			} catch (Exception e) {
+				return null;
+			} 
+		}
+		
         // 全部查出，并且在内存中生成树形结构
         List<ItemCat> cats = super.queryAll();
 
@@ -76,7 +103,12 @@ public class ItemCatService extends BaseService<ItemCat>{
                 break;
             }
         }
-
+        //写缓存
+        try {
+			redisService.set(key, MAPPER.writeValueAsString(result));
+		} catch (JsonProcessingException e) {
+			log.error(e.getMessage());
+		}
         return result;
     }
 }

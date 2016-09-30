@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.jt.common.service.RedisService;
 import com.jt.common.vo.EasyUIResult;
 import com.jt.common.vo.SysResult;
 import com.jt.manage.mapper.ItemDescMapper;
@@ -21,6 +22,8 @@ public class ItemService extends BaseService<Item>{
 	private ItemMapper itemMapper;
 	@Autowired
 	private ItemDescMapper itemDescMapper;
+	@Autowired
+	private RedisService redisService;
 	
 	public SysResult saveItem(Item item, String desc){
 		try {
@@ -65,7 +68,13 @@ public class ItemService extends BaseService<Item>{
 		itemDesc.setItemId(item.getId());
 		itemDesc.setUpdated(new Date());
 		itemDesc.setItemDesc(desc);
+		
 		itemDescMapper.updateByPrimaryKeySelective(itemDesc);
+		
+		//修改商品时,删除redis缓存
+		String key = "JT_ITEM_" + item.getId();
+		redisService.del(key);
+		
 		return SysResult.ok();
 	}
 	
@@ -81,5 +90,10 @@ public class ItemService extends BaseService<Item>{
 		itemDescMapper.deleteByIDS(ids);
 		itemMapper.deleteByIDS(ids);
 		return SysResult.ok();
+	}
+	
+	//根据是商品id查询商品描述，返回itemdesc
+	public ItemDesc getItemDescByItemId(Long itemId){
+		return itemDescMapper.selectByPrimaryKey(itemId);
 	}
 }
